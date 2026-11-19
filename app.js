@@ -48,19 +48,21 @@
   const descending=['passed'].includes(sort);
   document.querySelectorAll('[data-sort]').forEach(button=>{
    const label=button.dataset.label||(button.dataset.label=button.textContent.replace(/\s*[↑↓↕]\s*$/,'').trim());
-   const active=button.dataset.sort===sort;
+   const pairedOutcome=sort==='passed'&&['failed','passed'].includes(button.dataset.sort);
+   const active=button.dataset.sort===sort||pairedOutcome;
    button.textContent=label+' '+(['passed'].includes(button.dataset.sort)?'↓':'↑');
    button.setAttribute('aria-pressed',String(active));
    const header=button.closest('th');
+   header.classList.toggle('outcome-sorted',pairedOutcome);
    if(active){
-    header.setAttribute('aria-sort',descending?'descending':'ascending');
+    if(button.dataset.sort===sort)header.setAttribute('aria-sort',descending?'descending':'ascending');else header.removeAttribute('aria-sort');
     const metric=sort.includes('mpjpe_');
-    sortingLabel=(metric?'MPBPE · '+(sort.startsWith('full_')?'No termination':'Early termination')+' · ':'')+label;
-    button.title='Sorted best first: '+(descending?'high to low':'low to high')+'.';
+    sortingLabel=pairedOutcome?'Success / Failed':(metric?'MPBPE · '+(sort.startsWith('full_')?'No termination':'Early termination')+' · ':'')+label;
+    button.title=pairedOutcome?'Sorted together: fewer failures, higher success.':'Sorted best first: '+(descending?'high to low':'low to high')+'.';
    }else{header.removeAttribute('aria-sort');button.title='Sort by '+label+' · best first';}
   });
   const sortColumn=['mpjpe_xy_aligned_m','mpjpe_xy_yaw_aligned_m','mpjpe_world_m','full_mpjpe_xy_aligned_m','full_mpjpe_xy_yaw_aligned_m','full_mpjpe_world_m','failed','passed'].indexOf(sort)+4;
-  $('#sort-caption').textContent='Sorted by '+sortingLabel+' · '+(descending?'High → low':'Low → high')+' · Best first';
+  $('#sort-caption').textContent=sort==='passed'?'Sorted by Success ↓ / Failed ↑ · Best first':'Sorted by '+sortingLabel+' · '+(descending?'High → low':'Low → high')+' · Best first';
   const trackData=data.filter(r=>r.track_id===track.id&&r.termination_mode==='unified');
   $('#track-details').href=base+'/benchmarks/'+encodeURIComponent(track.benchmark_id)+'/';
   const url=new URL(location.href);url.searchParams.set('benchmark',track.benchmark_id);url.searchParams.set('robot',track.robot_id);url.searchParams.set('track',track.id);history.replaceState(null,'',url);
@@ -87,7 +89,7 @@
      if(v==null){td.textContent='—';td.className='pending';td.title='Full-motion evaluation not yet published';}
      else{const a=document.createElement('a');a.className='metric-evidence';a.href=base+'/evaluations/'+encodeURIComponent(track.id)+'/'+r.model+'/'+(i<=6?'#early':'#none');a.textContent=(v*1000).toFixed(2);a.title='Evaluation summary and independent verification receipt';td.append(a);}
     }else{td.textContent=v;if(i===3)td.title=v;}
-    if(i===sortColumn)td.classList.add('sorted-column');
+    if(i===sortColumn||(sort==='passed'&&(i===10||i===11)))td.classList.add('sorted-column');
     tr.append(td);
    });body.append(tr);
   }
@@ -95,5 +97,5 @@
  benchmark.addEventListener('change',()=>{setRobots(robot.value);page=1;render()});robot.addEventListener('change',()=>{page=1;render()});
  search.addEventListener('input',()=>{page=1;render()});size.addEventListener('change',()=>{page=1;render()});
  prev.addEventListener('click',()=>{page--;render()});next.addEventListener('click',()=>{page++;render()});
- document.querySelectorAll('[data-sort]').forEach(b=>b.addEventListener('click',()=>{const key=b.dataset.sort;if(sort===key)return;sort=key;page=1;render();}));render();
+ document.querySelectorAll('[data-sort]').forEach(b=>b.addEventListener('click',()=>{const key=b.dataset.sort==='failed'?'passed':b.dataset.sort;if(sort===key)return;sort=key;page=1;render();}));render();
 })();

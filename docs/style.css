@@ -164,6 +164,8 @@
 
 .dataset-logo.bones{background:#172923;border-radius:7px;padding:16px;}
 
-/* Major groups share a background and use a single fine separator. */
+/* A single separator divides the two metric windows. */
 #leaderboard .metric-group{background:#eef2ec}
-#leaderboard .metric-title,#leaderboard .metric-title+th,#leaderboard .metric-group,#leaderboard thead tr:last-child th:first-child,#leaderboard thead tr:last-child th:nth-child(4),#leaderboard tbody td:nth-child(5),#leaderboard tbody td:nth-child(8),#leaderboard tbody td:nth-child(11){border-left:1px solid #d5ded5}
+#leaderboard .full-motion,#leaderboard thead tr:last-child th:nth-child(4),#leaderboard tbody td:nth-child(8){border-left:1px solid #d5ded5}
+
+#leaderboard th.outcome-sorted{background:#e8eee7;color:var(--green)}
