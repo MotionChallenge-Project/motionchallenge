@@ -166,6 +166,6 @@
 
 /* A single separator divides the two metric windows. */
 #leaderboard .metric-group{background:#eef2ec}
-#leaderboard .full-motion,#leaderboard thead tr:last-child th:nth-child(4),#leaderboard tbody td:nth-child(8){border-left:1px solid #d5ded5}
+#leaderboard thead tr:nth-child(2) th:nth-child(2),#leaderboard thead tr:last-child th:nth-child(4),#leaderboard tbody td:nth-child(8){border-left:1px solid #d5ded5}
 
 #leaderboard th.outcome-sorted{background:#e8eee7;color:var(--green)}

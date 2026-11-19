@@ -19,6 +19,6 @@ content/ holds model metadata, frozen protocols and compact receipts. The builde
 
 GitHub Pages serves docs/ from the website branch. Building does not publish the site.
 
-The leaderboard opens BONES-SEED and sorts Success from high to low. Failed and Success occupy separate columns. Early termination precedes No termination; one vertical rule separates the two metric windows. Failed and Success share a sorting control and highlight together. Completion remains in evidence and detail pages. Dated news links directly to the selected benchmark leaderboard.
+The leaderboard opens BONES-SEED and sorts No termination · XY only from low to high. Failed and Success occupy separate columns. No termination precedes Early termination; one vertical rule separates the two metric windows. Failed and Success share a sorting control and highlight together. Completion remains in evidence and detail pages. Dated news links directly to the selected benchmark leaderboard.
 
 Protocol pages describe common evaluation standards; benchmark pages specify the robot and physical configuration. Organization marks and their sources are recorded under assets/model-icons/ and assets/dataset-logos/.
