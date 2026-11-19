@@ -34,22 +34,22 @@
  const table=document.querySelector('#leaderboard');if(!table)return;
  const $=s=>document.querySelector(s),body=table.querySelector('tbody'),search=$('#model-search'),empty=$('#empty'),size=$('#page-size'),prev=$('[data-page=previous]'),next=$('[data-page=next]');
  const benchmark=$('#benchmark-select'),robot=$('#robot-select');
- let data=[],tracks=[],sort='full_mpjpe_xy_aligned_m',page=1;
- try{const response=await fetch(base+'/data/results.json?v='+encodeURIComponent(document.querySelector('meta[name="results-revision"]')?.content||''),{cache:'no-cache'});if(!response.ok)throw new Error();const payload=await response.json();data=payload.rows;tracks=payload.tracks;if(!tracks.length)throw new Error();}
+ let data=[],tracks=[],sort='passed',page=1;
+ try{const response=await fetch(base+'/data/results.json?v='+encodeURIComponent(document.querySelector('meta[name="results-revision"]')?.content||''),{cache:'no-cache'});if(!response.ok)throw new Error();const payload=await response.json();data=payload.rows.map(r=>({...r,failed:r.total-r.passed}));tracks=payload.tracks;if(!tracks.length)throw new Error();}
  catch{empty.hidden=false;empty.textContent='Results could not be loaded. Please reload or download the summary JSON.';table.hidden=true;return;}
  const query=new URLSearchParams(location.search);
  function options(select,entries,preferred){select.replaceChildren();for(const [value,label] of new Map(entries)){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}if([...select.options].some(o=>o.value===preferred))select.value=preferred;}
- options(benchmark,tracks.map(t=>[t.benchmark_id,t.benchmark_label]),query.get('benchmark'));
+ options(benchmark,tracks.map(t=>[t.benchmark_id,t.benchmark_label]),query.get('benchmark')||'seed');
  function setRobots(preferred){options(robot,tracks.filter(t=>t.benchmark_id===benchmark.value).map(t=>[t.robot_id,t.robot_label]),preferred);}
  setRobots(query.get('robot'));
  function render(){
   const track=tracks.find(t=>t.benchmark_id===benchmark.value&&t.robot_id===robot.value);if(!track)return;
   let sortingLabel='';
-  const descending=['passed','completion_pct'].includes(sort);
+  const descending=['passed'].includes(sort);
   document.querySelectorAll('[data-sort]').forEach(button=>{
    const label=button.dataset.label||(button.dataset.label=button.textContent.replace(/\s*[↑↓↕]\s*$/,'').trim());
    const active=button.dataset.sort===sort;
-   button.textContent=label+' '+(['passed','completion_pct'].includes(button.dataset.sort)?'↓':'↑');
+   button.textContent=label+' '+(['passed'].includes(button.dataset.sort)?'↓':'↑');
    button.setAttribute('aria-pressed',String(active));
    const header=button.closest('th');
    if(active){
@@ -59,7 +59,7 @@
     button.title='Sorted best first: '+(descending?'high to low':'low to high')+'.';
    }else{header.removeAttribute('aria-sort');button.title='Sort by '+label+' · best first';}
   });
-  const sortColumn=['full_mpjpe_xy_aligned_m','full_mpjpe_xy_yaw_aligned_m','full_mpjpe_world_m','mpjpe_xy_aligned_m','mpjpe_xy_yaw_aligned_m','mpjpe_world_m','passed','completion_pct'].indexOf(sort)+4;
+  const sortColumn=['mpjpe_xy_aligned_m','mpjpe_xy_yaw_aligned_m','mpjpe_world_m','full_mpjpe_xy_aligned_m','full_mpjpe_xy_yaw_aligned_m','full_mpjpe_world_m','failed','passed'].indexOf(sort)+4;
   $('#sort-caption').textContent='Sorted by '+sortingLabel+' · '+(descending?'High → low':'Low → high')+' · Best first';
   const trackData=data.filter(r=>r.track_id===track.id&&r.termination_mode==='unified');
   $('#track-details').href=base+'/benchmarks/'+encodeURIComponent(track.benchmark_id)+'/';
@@ -77,14 +77,15 @@
   for(const [rowIndex,r] of rows.entries()){const tr=document.createElement('tr');
    const rank=start+rowIndex+1,medal=rank<=3?['gold','silver','bronze'][rank-1]:null;
    if(medal)tr.className='podium-'+medal;
-   [rank,r.label,r.controller_type,r.organization||'Not listed',r.full_mpjpe_xy_aligned_m,r.full_mpjpe_xy_yaw_aligned_m,r.full_mpjpe_world_m,r.mpjpe_xy_aligned_m,r.mpjpe_xy_yaw_aligned_m,r.mpjpe_world_m,r.passed,r.completion_pct].forEach((v,i)=>{const td=document.createElement('td');
+   [rank,r.label,r.controller_type,r.organization||'Not listed',r.mpjpe_xy_aligned_m,r.mpjpe_xy_yaw_aligned_m,r.mpjpe_world_m,r.full_mpjpe_xy_aligned_m,r.full_mpjpe_xy_yaw_aligned_m,r.full_mpjpe_world_m,r.failed,r.passed].forEach((v,i)=>{const td=document.createElement('td');
     if(i===0){td.className='rank';td.setAttribute('aria-label','Rank '+v);const badge=document.createElement('span');badge.className='rank-badge';if(medal){const icon=document.createElement('span');icon.className='rank-medal';icon.setAttribute('aria-hidden','true');icon.textContent=['🥇','🥈','🥉'][rank-1];badge.append(icon);td.title='Top '+rank+' by '+sortingLabel;}const number=document.createElement('span');number.className='rank-number';number.textContent=String(v);badge.append(number);td.append(badge);}
     else if(i===1){const entry=document.createElement('div');entry.className='model-entry';const icon=document.createElement(r.icon?'img':'span');icon.className='model-icon'+(r.icon?'':' model-initial');if(r.icon){icon.src=base+r.icon;icon.alt='';icon.width=32;icon.height=32;icon.title=r.icon_label;}else{icon.textContent=r.label[0].toUpperCase();icon.setAttribute('aria-hidden','true');}const text=document.createElement('div');text.className='model-entry-text';const a=document.createElement('a');a.href=base+'/models/'+r.model+'/';a.textContent=v;a.title=v;text.append(a);const links=document.createElement('small');links.className='eval-code-links';const details=document.createElement('a');details.href=base+'/evaluations/'+encodeURIComponent(track.id)+'/'+r.model+'/';details.textContent='Detailed results ↗';links.append(details);text.append(links);entry.append(icon,text);td.append(entry);}
     else if(i===2){const tag=document.createElement('span');tag.className='type-tag type-'+v.id;tag.textContent=v.label;tag.title=v.description;td.append(tag);}
-    else if(i===10){td.className='score';td.textContent=(v/track.clip_count*100).toFixed(1)+'%';const small=document.createElement('small');small.textContent=v+' / '+track.clip_count+' clips';td.append(small);}
-    else if(i===11)td.textContent=v.toFixed(2)+'%';else if(i>=4 && i<=9){
+    else if(i===10){td.className='failed-count';td.textContent=v.toLocaleString();td.title='Motions that reached a failure condition before the endpoint';}
+    else if(i===11){td.className='score';td.textContent=(v/track.clip_count*100).toFixed(1)+'%';const small=document.createElement('small');small.textContent=v+' / '+track.clip_count+' clips';td.append(small);}
+    else if(i>=4 && i<=9){
      if(v==null){td.textContent='—';td.className='pending';td.title='Full-motion evaluation not yet published';}
-     else{const a=document.createElement('a');a.className='metric-evidence';a.href=base+'/evaluations/'+encodeURIComponent(track.id)+'/'+r.model+'/'+(i<=6?'#none':'#early');a.textContent=(v*1000).toFixed(2);a.title='Evaluation record, per-motion metrics and verification receipt';td.append(a);}
+     else{const a=document.createElement('a');a.className='metric-evidence';a.href=base+'/evaluations/'+encodeURIComponent(track.id)+'/'+r.model+'/'+(i<=6?'#early':'#none');a.textContent=(v*1000).toFixed(2);a.title='Evaluation summary and independent verification receipt';td.append(a);}
     }else{td.textContent=v;if(i===3)td.title=v;}
     if(i===sortColumn)td.classList.add('sorted-column');
     tr.append(td);

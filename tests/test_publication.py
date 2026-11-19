@@ -1,75 +1,36 @@
-import copy
-import json
+import copy,json,sys,tempfile,unittest
 from pathlib import Path
-import unittest
-from publication_checks import validate, validate_row, validate_inference
-
-CONTENT=Path(__file__).resolve().parents[1]/'content'
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+import publication_checks
 class PublicationTests(unittest.TestCase):
-    def setUp(self):
-        self.models=json.loads((CONTENT/'models.json').read_text())
-        self.rows=json.loads((CONTENT/'results.json').read_text())['rows']
-        self.tracks=json.loads((CONTENT/'tracks.json').read_text())
-        self.row=next(r for r in self.rows if r['model']=='grit')
-        self.evidence=json.loads((CONTENT/'evidence'/self.row['evidence_file']).read_text())
-    def test_all_current_evidence_matches(self):
-        validate(CONTENT,self.rows,self.models,self.tracks)
-    def test_forged_displayed_score_is_rejected(self):
-        row=copy.deepcopy(self.row);row['passed']+=1
-        with self.assertRaisesRegex(ValueError,'success count'):
-            validate_row(row,self.models['grit'],self.tracks[0],self.evidence)
-    def test_rule_drift_is_rejected(self):
-        track=dict(self.tracks[0],robot_profile_sha256='0'*64)
-        with self.assertRaisesRegex(ValueError,'robot_profile'):
-            validate_row(self.row,self.models['grit'],track,self.evidence)
-    def test_altered_trace_summary_is_rejected(self):
-        evidence=copy.deepcopy(self.evidence);evidence['result']['clips'].pop()
-        with self.assertRaisesRegex(ValueError,'changed result'):
-            validate_row(self.row,self.models['grit'],self.tracks[0],evidence)
-    def test_failed_repeat_cannot_be_published(self):
-        evidence=copy.deepcopy(self.evidence);evidence['repeatability']['status']='different'
-        with self.assertRaisesRegex(ValueError,'repeatability'):
-            validate_row(self.row,self.models['grit'],self.tracks[0],evidence)
-    def test_nonfinite_metric_is_rejected(self):
-        row=dict(self.row,mpjpe_world_m=float('nan'))
-        with self.assertRaisesRegex(ValueError,'displayed'):
-            validate_row(row,self.models['grit'],self.tracks[0],self.evidence)
-    def test_inference_checkpoint_mismatch_is_rejected(self):
-        check=json.loads((CONTENT/'inference_checks.json').read_text())['tracks'][self.row['track_id']]['grit']
-        report=json.loads((CONTENT/'inference'/check['report_file']).read_text())
-        check['checkpoint_sha256']='0'*64
-        with self.assertRaisesRegex(ValueError,'inference identity'):
-            validate_inference(self.row,check,report)
-    def test_excessive_inference_error_is_rejected(self):
-        check=json.loads((CONTENT/'inference_checks.json').read_text())['tracks'][self.row['track_id']]['grit']
-        report=json.loads((CONTENT/'inference'/check['report_file']).read_text())
-        report['max_abs_error']['motor_command']=1.0
-        with self.assertRaisesRegex(ValueError,'inference error'):
-            validate_inference(self.row,check,report)
-
-    def test_privileged_score_cannot_be_relabelled_as_restricted(self):
-        for state in (None,'privileged-state-v0'):
-            evidence=copy.deepcopy(self.evidence)
-            evidence['result']['state_access']=state
-            with self.assertRaisesRegex(ValueError,'observation access'):
-                validate_row(self.row,self.models['grit'],self.tracks[0],evidence)
-
-    def test_restricted_admission_and_protocol_are_bound_to_evidence(self):
-        row=next(r for r in self.rows if r['track_id']==self.tracks[0]['id'])
-        evidence=json.loads((CONTENT/'evidence'/row['evidence_file']).read_text())
-        track=next(t for t in self.tracks if t['id']==row['track_id'])
-        altered=copy.deepcopy(evidence)
-        altered['observation_admission']['checkpoint_sha256']='0'*64
-        with self.assertRaisesRegex(ValueError,'admission source hash'):
-            validate_row(row,self.models[row['model']],track,altered)
-        altered_track=dict(track,protocol_sha256='0'*64)
-        with self.assertRaisesRegex(ValueError,'protocol identity'):
-            validate_row(row,self.models[row['model']],altered_track,evidence)
-
-    def test_rescoring_cannot_replace_the_original_rollout_identity(self):
-        if self.evidence['result'].get('execution')!='rescored_full_trajectory':
-            self.skipTest('Rescored evidence has not been imported yet')
-        evidence=copy.deepcopy(self.evidence);row=copy.deepcopy(self.row)
-        row['scoring_core_commit']='0'*40
-        with self.assertRaisesRegex(ValueError,'scoring source identity'):
-            validate_row(row,self.models['grit'],self.tracks[0],evidence)
+ def setUp(self):
+  self.content=Path(__file__).resolve().parents[1]/'content'
+  self.rows=json.loads((self.content/'results.json').read_text())['rows']
+  self.models=json.loads((self.content/'models.json').read_text())
+  self.tracks=json.loads((self.content/'tracks.json').read_text())
+ def check(self,rows=None,models=None,tracks=None):
+  publication_checks.validate(self.content,self.rows if rows is None else rows,self.models if models is None else models,self.tracks if tracks is None else tracks)
+ def test_evidence(self):self.check()
+ def test_changed_metric_rejected(self):
+  self.assertTrue(self.rows);rows=copy.deepcopy(self.rows);rows[0]['full_mpjpe_xy_aligned_m']+=.01
+  with self.assertRaisesRegex(ValueError,'metric mismatch'):self.check(rows=rows)
+ def test_excluded_model_rejected(self):
+  models=copy.deepcopy(self.models);models[self.rows[0]['model']]['admission']['status']='excluded'
+  with self.assertRaisesRegex(ValueError,'not admitted'):self.check(models=models)
+ def test_wrong_cohort_rejected(self):
+  tracks=copy.deepcopy(self.tracks)
+  for t in tracks:
+   if t['id']==self.rows[0]['track_id']:t['clip_count']+=1
+  with self.assertRaisesRegex(ValueError,'Incomplete'):self.check(tracks=tracks)
+ def test_duplicate_rejected(self):
+  with self.assertRaisesRegex(ValueError,'Duplicate'):self.check(rows=[*self.rows,self.rows[0]])
+ def test_evidence_digest_rejected(self):
+  rows=copy.deepcopy(self.rows);rows[0]['evidence_sha256']='0'*64
+  with self.assertRaisesRegex(ValueError,'digest mismatch'):self.check(rows=rows)
+ def test_unverified_checkpoint_source_rejected(self):
+  models=copy.deepcopy(self.models);models[self.rows[0]['model']]['checkpoint_origin']['status']='third_party_export'
+  with self.assertRaisesRegex(ValueError,'Official author checkpoint'):self.check(models=models)
+ def test_failed_motion_count_rejected(self):
+  rows=copy.deepcopy(self.rows);rows[0]['failed']+=1
+  with self.assertRaisesRegex(ValueError,'Failed-motion count'):self.check(rows=rows)
+if __name__=='__main__':unittest.main()

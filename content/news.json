@@ -1,0 +1,12 @@
+[
+  {
+    "date": "2026-11-19",
+    "text": "BONES-SEED is now supported: 129,561 G1 motions with GPU batch evaluation.",
+    "href": "/?benchmark=seed#leaderboard"
+  },
+  {
+    "date": "2026-11-19",
+    "text": "LAFAN1 supports the MJWarp protocol across all 40 G1 motions.",
+    "href": "/?benchmark=lafan#leaderboard"
+  }
+]

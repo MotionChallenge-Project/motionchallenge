@@ -1,139 +1,32 @@
-"""Fail a website build when a displayed score disagrees with its run evidence.
-
-This checks publication consistency. Raw-trace verification and native-inference
-review remain separate, required evaluation steps; JSON is not execution proof.
-"""
-import hashlib
-import json
-import math
-from pathlib import Path
-
-
-def require(condition, message):
-    if not condition:
-        raise ValueError(message)
-
-
-def same_number(a, b, label):
-    require(math.isfinite(a) and math.isfinite(b) and
-            math.isclose(a, b, rel_tol=0, abs_tol=1e-10), label)
-
-
-def validate_inference(row, check, report):
-    name = row['model']
-    require(check['status'] == 'passed' and
-            check['production_inference_alignment'] == 'identical', name+': inference approval')
-    require(check['checkpoint_sha256'] == row['checkpoint_sha256'] and
-            check['evaluated_adapter_commit'] == row['adapter_commit'], name+': inference identity')
-    require(report['cases'] >= 160 and report['resets'] >= 4, name+': inference coverage')
-    for field in ('report_url', 'code_url', 'runtime_url'):
-        require('/blob/'+check['checked_adapter_commit']+'/' in check[field], name+': inference source')
-    errors = report.get('max_abs_errors', report.get('max_abs_error', report.get('max_abs')))
-    require(bool(errors), name+': missing inference errors')
-    for key, error in errors.items():
-        limit = check['limits'][key] if isinstance(check['limits'], dict) else check['limits']
-        require(math.isfinite(error) and 0 <= error <= limit, name+': inference error '+key)
-    require(report.get('status', 'passed') == 'passed' and
-            report.get('passed', True) is True, name+': failed inference report')
-
-
-def validate_row(row, model, track, evidence):
-    name=row['model']; result=evidence['result']; source=result['source']
-    require(result.get('state_access') == row.get('state_access') == track.get('state_access') == 'ideal-proprioceptive-no-position-v1', name+': observation access')
-    for scope, id_key, hash_key in [('until_first_failure','protocol_id','protocol_sha256'), ('full_motion','no_termination_protocol_id','no_termination_protocol_sha256')]:
-        require(result['protocols'][scope]['protocol_id']==track[id_key] and result['protocols'][scope]['protocol_sha256']==track[hash_key], name+': observation protocol identity')
-    validate_admission(row,evidence)
-    require(evidence['model']==name, name+': wrong evidence')
-    require(result['schema'] in ('MotionChallenge/unified-result-v1', 'motion-challenge/unified-result-v1') and
-            result['status']=='trace_verified', name+': unverified result')
-    digest=hashlib.sha256((json.dumps(result, indent=2)+'\n').encode()).hexdigest()
-    require(digest==evidence['result_sha256'], name+': changed result')
-    require(result['backend']=='batch' and result['mujoco_version']==track['mujoco_version'], name+': engine')
-    require(row['termination_mode']=='unified' and row['mujoco_version']==result['mujoco_version'], name+': result mode')
-    for field in ('suite_sha256', 'robot_profile_sha256'):
-        require(result[field]==track[field], name+': '+field)
-    for field in ('adapter_commit', 'core_commit'):
-        require(row[field]==source[field] and row[field]==evidence['reproduction'][field], name+': source identity')
-        require(row[field] in row[field.replace('_commit', '_code_url')], name+': unpinned code link')
-    require(not source['adapter_dirty'] and not source['core_dirty'], name+': dirty source')
-    require(evidence['summary']['source']==source and evidence['summary']['status']=='trace_verified', name+': summary')
-    require(row['checkpoint_sha256']==result['checkpoint_sha256']==model['runtime']['weights_sha256'], name+': checkpoint')
-    repeat=evidence['repeatability']
-    require(repeat['status']=='passed' and not repeat.get('differences') and
-            not repeat.get('difference_fields'), name+': repeatability')
-    for mode in ('early', 'none'):
-        receipt=evidence['receipts'][mode]
-        require(receipt['status']=='trace_verified' and receipt['full_suite'] and
-                receipt['source_unchanged_during_run'] and receipt['source']==source, name+': receipt')
-        require(receipt['verification']['verification']=='trace_consistent' and
-                receipt['verification']['full_suite'], name+': trajectory verification')
-        if 'modes' in repeat:
-            proof=repeat['modes'][mode]
-            require(proof['new_result_sha256']==result['components'][mode]['result_sha256'] and
-                    proof['new_receipt_sha256']==result['components'][mode]['receipt_sha256'], name+': repeat components')
-    if 'first_result_sha256' in repeat:
-        require(repeat['first_result_sha256']==digest, name+': repeat result identity')
-    if result.get('execution')=='rescored_full_trajectory':
-        scoring=result['scoring_source'];derivation=result['derivation']
-        require(not scoring['core_dirty'] and scoring['core_commit']==row.get('scoring_core_commit')==evidence['reproduction'].get('scoring_core_commit'), name+': scoring source identity')
-        require(scoring['core_commit'] in row.get('scoring_code_url',''),name+': scoring code link')
-        original=repeat['original_repeatability']
-        require(original['status']=='passed' and original['first_result_sha256']==derivation['original_result_sha256'],name+': original trace provenance')
-        require(len(derivation['trace_sha256'])==result['total'] and evidence['raw_trace_hashes_verified']==2*result['total'],name+': rescored trace coverage')
-        for receipt in evidence['receipts'].values():
-            require(receipt['scoring_source']==scoring and receipt['derivation']==derivation,name+': scoring receipt')
-        require(0<=derivation['full_motion_max_abs_delta_m']<1e-7,name+': full-motion metric drift')
-    if 'result_sha256' in repeat:
-        require(digest in repeat['result_sha256'].values(), name+': repeat result identity')
-    clips=result['clips'];count=track['clip_count']
-    require(row['total']==result['total']==len(clips)==len({c['id'] for c in clips})==count, name+': incomplete suite')
-    require(row['passed']==result['success_count']==sum(c['success'] for c in clips), name+': success count')
-    for clip in clips:
-        require(0<=clip['completion']<=1 and clip['duration_s']>0, name+': invalid motion')
-        require(0<clip['sample_count']['until_first_failure']<=clip['sample_count']['full_motion'], name+': sample ranges')
-    same_number(result['macro_completion'],sum(c['completion'] for c in clips)/count,name+': completion')
-    same_number(row['completion_pct'],result['macro_completion']*100,name+': displayed completion')
-    for scope, prefix in (('until_first_failure',''), ('full_motion','full_')):
-        for metric,value in result['metrics'][scope].items():
-            same_number(value,sum(c['metrics'][scope][metric] for c in clips)/count,name+': macro '+metric)
-            same_number(row[prefix+metric],value,name+': displayed '+prefix+metric)
-
-
-def validate_admission(row,evidence):
-    name=row['model'];source=evidence['result']['source']
-    admission=evidence['observation_admission']
-    digest=hashlib.sha256((json.dumps(admission,indent=2)+'\n').encode()).hexdigest()
-    require(digest==source['tracked_files_sha256']['admission.json'],name+': admission source hash')
-    require(admission['checkpoint_sha256']==row['checkpoint_sha256'] and admission['state_access']=='ideal-proprioceptive-no-position-v1' and admission['status']=='inference_verified',name+': admission identity')
-    for path,sha in admission['production_source_sha256'].items():
-        require(source['tracked_files_sha256'].get(path)==sha,name+': base inference source changed')
-    report=evidence['observation_dependency_report']
-    digest=hashlib.sha256((json.dumps(report,indent=2)+'\n').encode()).hexdigest()
-    require(digest==admission['dependency_test']['sha256']==source['tracked_files_sha256']['validation/observation-access.json'],name+': dependency report hash')
-    require(report['status']=='passed' and report['cases']>=160 and report['resets']>=4,name+': dependency test failed')
-    for value in report['max_abs_error'].values():
-        require(math.isfinite(value) and 0<=value<=report['tolerance_abs'],name+': restricted inference mismatch')
-    require(bool(admission['prior_native_parity_sha256']),name+': missing author comparison')
-    for path,sha in admission['prior_native_parity_sha256'].items():
-        require(source['tracked_files_sha256'].get(path)==sha,name+': author parity source changed')
-
-
-def validate(content, rows, models, tracks):
-    by_id={t['id']:t for t in tracks};seen=set()
-    require({r['model'] for r in rows} <= set(models), 'Ranked model metadata is missing')
-    require(all(t.get('state_access')=='ideal-proprioceptive-no-position-v1' for t in tracks), 'Only the proprioceptive observation contract is supported')
-    catalog=json.loads((content/'inference_checks.json').read_text())
-    checks=catalog['models']
-    require(set(checks)==set(models), 'Ranked models require inference checks')
-    for row in rows:
-        identity=(row['track_id'],row['model'])
-        require(identity not in seen, 'Duplicate model/track result');seen.add(identity)
-        filename=row['evidence_file']
-        require(Path(filename).name==filename, 'Evidence must be a local JSON file')
-        evidence=json.loads((content/'evidence'/filename).read_text())
-        validate_row(row, models[row['model']], by_id[row['track_id']], evidence)
-        check=catalog['tracks'][row['track_id']][row['model']]
-        require(Path(check['report_file']).name==check['report_file'], 'Inference report must be local')
-        raw=(content/'inference'/check['report_file']).read_bytes()
-        require(hashlib.sha256(raw).hexdigest()==check['report_sha256'], row['model']+': changed inference report')
-        validate_inference(row, check, json.loads(raw))
+"""Check evidence before building public MJWarp result pages."""
+import hashlib,json,math
+def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def validate(content,rows,models,tracks):
+ by_id={t['id']:t for t in tracks};seen=set()
+ for row in rows:
+  key=(row['model'],row['track_id'])
+  if key in seen:raise ValueError('Duplicate leaderboard entry')
+  seen.add(key);track=by_id[row['track_id']]
+  model=models[row['model']]
+  if model['admission']['status']!='inference_verified':raise ValueError('Model inference is not admitted')
+  origin=model.get('checkpoint_origin',{})
+  if origin.get('status')!='author_release_verified' or origin.get('sha256')!=model['runtime']['weights_sha256']:raise ValueError('Official author checkpoint is not verified')
+  if not origin.get('author_release_url') or not origin.get('artifact_url'):raise ValueError('Official checkpoint source links are missing')
+  evidence=json.loads((content/'evidence'/row['evidence_file']).read_text())
+  if row['evidence_sha256']!=digest(content/'evidence'/row['evidence_file']):raise ValueError('Evidence digest mismatch')
+  verify=evidence['verification']
+  if verify['verification']!='independent_cpu_trace_recomputation_passed' or verify['result_sha256']!=evidence['result_sha256']:raise ValueError('Result is not independently verified')
+  if evidence['clips']!=track['clip_count'] or verify['clips']!=track['clip_count']:raise ValueError('Incomplete dataset')
+  if evidence['protocol_sha256']!=track['protocol_sha256']:raise ValueError('Wrong protocol')
+  engine=evidence['engine']
+  if engine['backend']!='mjwarp' or engine['substeps']!=4 or engine['njmax']!=4096 or engine['nconmax']!=100:raise ValueError('Unexpected simulator configuration')
+  if evidence['checkpoint_sha256']!=model['runtime']['weights_sha256']:raise ValueError('Checkpoint mismatch')
+  if evidence.get('checkpoint_origin')!=origin:raise ValueError('Checkpoint origin evidence mismatch')
+  summary=evidence['summary']
+  if row.get('failed')!=track['clip_count']-summary['success_count']:raise ValueError('Failed-motion count mismatch')
+  if row['passed']!=summary['success_count'] or row['completion_pct']!=100*summary['completion']:raise ValueError('Summary mismatch')
+  if not 0<=row['passed']<=track['clip_count'] or not 0<=row['completion_pct']<=100:raise ValueError('Invalid success or completion')
+  for span,prefix in [('full','full_'),('prefix','')]:
+   for name,value in summary[span].items():
+    if not math.isfinite(value) or value<0:raise ValueError('Invalid metric')
+    if name.startswith('mpjpe_') and row[prefix+name]!=value:raise ValueError('Leaderboard metric mismatch')

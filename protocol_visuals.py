@@ -1,0 +1,40 @@
+"""Accessible, repository-native protocol diagrams."""
+
+def figure(name, title, body, caption, width=1000, height=240):
+    return f'''<figure class="protocol-figure"><svg viewBox="0 0 {width} {height}" role="img" aria-labelledby="{name}-title {name}-desc" xmlns="http://www.w3.org/2000/svg"><title id="{name}-title">{title}</title><desc id="{name}-desc">{caption}</desc><defs><marker id="{name}-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="#739288"/></marker></defs>{body}</svg><figcaption>{caption}</figcaption></figure>'''
+
+def observations():
+    rows=[
+        ('Robot state','Joint positions and velocities','Allowed',True),
+        ('Robot state','Root orientation and angular velocity','Allowed',True),
+        ('Policy context','Evaluation clock and policy history','Allowed',True),
+        ('Reference motion','Root and joint information, including declared derivatives','Allowed',True),
+        ('Robot state','Actual global position','Excluded',False),
+        ('Robot state','Actual linear velocity in any coordinate frame','Excluded',False),
+        ('State estimates','Explicit estimates of linear velocity','Excluded',False),
+    ]
+    body=''.join(f'<tr><th scope="row">{group}</th><td>{feature}</td><td><span class="observation-verdict {"allowed" if allowed else "excluded"}">{label}</span></td></tr>' for group,feature,label,allowed in rows)
+    return '<div class="protocol-table-wrap"><table class="protocol-observations"><thead><tr><th scope="col">Source</th><th scope="col">Information</th><th scope="col">Policy access</th></tr></thead><tbody>'+body+'</tbody></table></div>'
+
+def flow():
+    body='''<g class="diagram-box"><rect x="20" y="26" width="245" height="78" rx="12"/><rect x="355" y="26" width="270" height="78" rx="12"/><rect x="715" y="26" width="265" height="78" rx="12"/><rect x="355" y="165" width="270" height="78" rx="12"/><rect x="715" y="165" width="265" height="78" rx="12"/></g><g class="diagram-heading"><text x="142" y="59">Reference motion</text><text x="490" y="59">Model adapter + policy</text><text x="847" y="59">MJWarp simulation</text><text x="490" y="197">Reference FK cache</text><text x="847" y="197">Scoring</text></g><g class="diagram-small"><text x="142" y="84">Root + joints</text><text x="490" y="84">Own reference features</text><text x="847" y="84">Torque-limited joint PD</text><text x="490" y="222">Computed before rollout</text><text x="847" y="222">Reference vs. actual poses</text></g><g class="diagram-arrow" marker-end="url(#flow-arrow)"><path d="M265 65H345"/><path d="M625 65H705"/><path d="M142 104V204H345"/><path d="M625 204H705"/><path d="M847 104V155"/><path d="M847 26V8H490V22"/></g><text class="diagram-small" x="696" y="141">Body poses from engine</text><text class="diagram-small" x="674" y="291">Feedback to policy: allowed state only</text>'''
+    return figure('flow','Reference, policy and scoring data flow',body,'Adapters construct policy reference features. Core precomputes reference FK for scoring; actual body poses come directly from the simulator.',height=310)
+
+def failure():
+    body='''<text class="diagram-small" x="90" y="40">Start</text><text class="diagram-small" x="620" y="40">First failure</text><text class="diagram-small" x="920" y="40">Endpoint</text><rect x="90" y="65" width="830" height="30" rx="8" fill="#e6ece7"/><rect x="90" y="65" width="530" height="30" rx="8" fill="#b7d6c5"/><path d="M620 52V178" stroke="#ad6750" stroke-width="2" stroke-dasharray="5 5"/><circle cx="620" cy="80" r="6" fill="#ad6750"/><text class="diagram-heading" x="350" y="127">Prefix metrics</text><text class="diagram-small" x="350" y="151">Through the first failure sample</text><text class="diagram-small" x="780" y="127">Simulation continues</text><path class="diagram-arrow" d="M90 179H920"/><path class="diagram-arrow" d="M90 170V188M920 170V188"/><text class="diagram-heading" x="505" y="214">Full-motion metrics use the entire rollout</text>'''
+    return figure('failure','Failure, completion and metric windows',body,'Failure: pelvis height error > 0.25 m OR gravity-Z error > 0.8. Completion uses the last passing sample before first failure, divided by motion duration. Success requires reaching the endpoint without failure.',height=235)
+
+def alignment():
+    # Top-view articulated shapes: the orange joint offset remains after alignment.
+    ref='M0 -44L0 35M0 -20L-34 3M0 -20L34 3M0 35L-25 65M0 35L25 65'
+    actual='M0 -44L0 35M0 -20L-34 3M0 -20L39 8M0 35L-25 65M0 35L32 61'
+    body=''
+    for x,title,transform,subtitle in [(167,'No alignment','translate(34 4) rotate(28)','World-coordinate error'),(500,'XY only','rotate(28)','Remove horizontal translation'),(833,'XY + yaw','','Also remove heading offset')]:
+        body+=f'<text class="diagram-heading" x="{x}" y="30">{title}</text><g transform="translate({x} 116)"><circle r="77" fill="#f1f5ef"/><path d="{ref}" stroke="#155e50" stroke-width="6" stroke-linecap="round" fill="none"/><g transform="{transform}"><path d="{actual}" stroke="#bb7956" stroke-width="4" stroke-dasharray="7 5" stroke-linecap="round" fill="none"/></g></g><text class="diagram-small" x="{x}" y="224">{subtitle}</text>'
+    return figure('alignment','Three position-error alignment views',body,'Top-view illustration: green = reference, dashed orange = simulated pose. Vertical error is retained in all three views. Each view is reported for both full motion and the prefix.',height=245)
+
+def render():
+    return '''<nav class="protocol-jump" aria-label="Protocol sections"><a href="#observations">Observations</a><a href="#dataflow">Data flow</a><a href="#failure">Failure</a><a href="#alignment">Metrics</a></nav><section class="protocol-block" id="observations"><p class="eyebrow">01 · OBSERVATIONS</p><h2>A fixed boundary for every policy.</h2>'''+observations()+'''</section><section class="protocol-block" id="dataflow"><p class="eyebrow">02 · DATA FLOW</p><h2>From reference motion to a verified score.</h2>'''+flow()+'''</section><section class="protocol-block" id="failure"><p class="eyebrow">03 · FAILURE &amp; COMPLETION</p><h2>A failure is recorded. The rollout continues.</h2>'''+failure()+'''<div class="protocol-facts"><p><strong>Gravity-Z error</strong>Compare the vertical components of gravity in the actual and reference pelvis frames: <code>|g_actual,z − g_reference,z|</code>, where <code>g = Rᵀ(0, 0, −1)</code>. This value is dimensionless.</p><p><strong>Sample boundaries</strong>If the first failure is at 20 ms, completion is 0%; prefix metrics still include that failed sample. The initial t = 0 state is excluded from metric averages.</p></div></section><section class="protocol-block" id="alignment"><p class="eyebrow">04 · TRACKING METRICS</p><h2>Three alignments. Two time windows.</h2>'''+alignment()+'''<p>Mean per-body position error (MPBPE) averages Euclidean distances over the declared body origins and sampled frames within each motion, then weights motions equally. Root positions and joints use linear interpolation; orientations use SLERP.</p></section><section class="protocol-block"><p class="eyebrow">05 · REPRODUCTION</p><h2>Original author weights. Local evaluation.</h2><p>Download the original motion dataset and an independent model repository. The command downloads the pinned author checkpoint, converts it locally, verifies inference, runs the full dataset and independently recomputes metrics on CPU.</p><pre><code>git clone --recurse-submodules https://github.com/MotionChallenge-Project/MotionChallenge-heft
+cd MotionChallenge-heft
+uv sync --locked
+uv run --locked python evaluate.py --dataset seed --data /data/seed/g1.tar.gz --output results/seed</code></pre><p>Use Linux x86-64 with an NVIDIA GPU. <code>--cache</code> selects a shared local cache; <code>--device</code> selects the GPU. Results bind protocol, data, weights, source files, simulation settings and recorded traces. Numerical simulation failures do not receive a ranked full-suite score.</p></section>'''
