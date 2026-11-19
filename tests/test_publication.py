@@ -1,7 +1,8 @@
-import copy,json,sys,tempfile,unittest
+import copy,json,sys,tempfile,unittest,shutil
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import publication_checks
+import run_compatibility
 class PublicationTests(unittest.TestCase):
  def setUp(self):
   self.content=Path(__file__).resolve().parents[1]/'content'
@@ -33,4 +34,36 @@ class PublicationTests(unittest.TestCase):
  def test_failed_motion_count_rejected(self):
   rows=copy.deepcopy(self.rows);rows[0]['failed']+=1
   with self.assertRaisesRegex(ValueError,'Failed-motion count'):self.check(rows=rows)
+ def test_total_rejected(self):
+  rows=copy.deepcopy(self.rows);rows[0]['total']+=1
+  with self.assertRaisesRegex(ValueError,'total mismatch'):self.check(rows=rows)
+ def mutate_evidence(self,change,message):
+  with tempfile.TemporaryDirectory() as tmp:
+   content=Path(tmp)/'content';shutil.copytree(self.content,content)
+   rows=copy.deepcopy(self.rows);path=content/'evidence'/rows[0]['evidence_file']
+   evidence=json.loads(path.read_text());change(evidence);path.write_text(json.dumps(evidence))
+   rows[0]['evidence_sha256']=publication_checks.digest(path)
+   with self.assertRaisesRegex(ValueError,message):
+    publication_checks.validate(content,rows,self.models,self.tracks)
+ def test_stale_physics_rejected(self):
+  self.mutate_evidence(lambda e:e['source_sha256'].__setitem__('simulation/warp_physics.py','0'*64),'Evaluator source mismatch')
+ def test_missing_evaluator_source_rejected(self):
+  self.mutate_evidence(lambda e:e['source_sha256'].pop('evaluation/tensor_metrics.py'),'Evaluator source mismatch')
+ def test_changed_model_helper_rejected(self):
+  names=self.models[self.rows[0]['model']]['evaluation_source_sha256']
+  helper=next(n for n in names if n!='tensor_adapter.py')
+  self.mutate_evidence(lambda e:e['adapter_sha256'].__setitem__(helper,'0'*64),'Model inference source mismatch')
+ def test_changed_runtime_dynamics_rejected(self):
+  self.mutate_evidence(lambda e:e['runtime_snapshot'].__setitem__('action_mode','different'),'Runtime execution fields mismatch')
+ def test_wrong_engine_version_rejected(self):
+  self.mutate_evidence(lambda e:e['engine']['versions'].__setitem__('mujoco','0.0.0'),'engine versions')
+ def test_model_import_closure(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   root=Path(tmp);(root/'policy').mkdir()
+   (root/'tensor_adapter.py').write_text('from policy.network import Policy\nimport torch\n')
+   (root/'policy/__init__.py').write_text('from . import helpers\n')
+   (root/'policy/network.py').write_text('from .helpers import scale\nclass Policy: pass\n')
+   (root/'policy/helpers.py').write_text('scale = 1\n')
+   (root/'validate.py').write_text('pass\n')
+   self.assertEqual(set(run_compatibility.model_sources(root,'tensor_adapter:Policy')),{'tensor_adapter.py','policy/__init__.py','policy/network.py','policy/helpers.py'})
 if __name__=='__main__':unittest.main()

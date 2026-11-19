@@ -176,6 +176,10 @@
         "local_batch_format": "safetensors with model-local tensor implementation",
         "numerical_evidence": "validation/inference-network-proof.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "holo_torch.py": "85ccc14b09b44efee533f5c810b3094a7a49f6d902fc6a1188dd0afa94b743e0",
+      "tensor_adapter.py": "9db3def5fa23447944b4a75b5492781d54a502b0544ddaa3998383c08514c1bc"
     }
   },
   "protomotions": {
@@ -288,6 +292,10 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "c2cf72dc4fb3e0b5d9d07265e381495d8d1a5024e8f67248af1007b27758e45b",
+      "torch_graph.py": "ce486e7811fbef05a7ca2900b731531dc59a7c4e143e55bf513f1ce4818923b5"
     }
   },
   "teleopit": {
@@ -403,6 +411,11 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "18733efaf07ad010a28006689cdc17824b252bd92d5c1c923543ea378a3619ce",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     }
   },
   "sonic-v1-1": {
@@ -564,6 +577,10 @@
       },
       "author_variant_manifest_url": "https://huggingface.co/nvidia/GEAR-SONIC/raw/6733128a3d8a523b1418b06bca3cdf61c8b0987f/config.json",
       "author_variant_manifest_sha256": "326dcc509ad93509cf262871256a74f508f43a8430f61ec6abe8034e985ce948"
+    },
+    "evaluation_source_sha256": {
+      "sonic_torch.py": "2bfa2aeb673aa7fb48a72f1b571f34bb61549386366caa655b8385b9cf18c3bb",
+      "tensor_adapter.py": "677ce65b6fba3b87888daed92738710875a09f41e832fd261cad8637ffda033a"
     }
   },
   "sonic-low-latency": {
@@ -725,6 +742,10 @@
       },
       "author_variant_manifest_url": "https://huggingface.co/nvidia/GEAR-SONIC/raw/6733128a3d8a523b1418b06bca3cdf61c8b0987f/config.json",
       "author_variant_manifest_sha256": "326dcc509ad93509cf262871256a74f508f43a8430f61ec6abe8034e985ce948"
+    },
+    "evaluation_source_sha256": {
+      "sonic_torch.py": "2bfa2aeb673aa7fb48a72f1b571f34bb61549386366caa655b8385b9cf18c3bb",
+      "tensor_adapter.py": "677ce65b6fba3b87888daed92738710875a09f41e832fd261cad8637ffda033a"
     }
   },
   "twist2": {
@@ -857,6 +878,11 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "69b97c30ede02876770948267733457797962400060bcb967d1ee6d284879d10",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     }
   },
   "grit": {
@@ -1003,6 +1029,11 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "c0a29602188ec4a1641c084010a1e7d18fa0522457a23d09628700e3a30072e1",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     }
   },
   "heft": {
@@ -1165,6 +1196,10 @@
       "bootstrap": "prepare_checkpoint:prepare",
       "bootstrap_source_sha256": "108788207eac73217d452da32e4e098850322f77513c697e303c810833592774",
       "bootstrap_validation": "author-bootstrap.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "9e3f752bf5a2ffef9049c0912c2686b191510d2abfd0b5bc18ef273efa148de8",
+      "torch_policy.py": "ca9baf1adb7c053a01aaa5d10f65bb51ab7e7f3dd8cc0500c20a2c0d289f0ee6"
     }
   },
   "mimic-lite": {
@@ -1289,6 +1324,9 @@
       "original_filename": "PPO / policy.onnx",
       "verification_scope": "The author README links this PPO Drive folder, whose recorded listing contains the exact policy file ID used by the adapter. The download host is Google Drive, not a separate model publisher.",
       "upstream_source_commit": "3253810ce21dbcc05d8f4942a017ea3eaffc6cf1"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "c7ba1d0f02a4bae2b03d4f0a8304a57419e620ea976e548fa624286fd9b6a711"
     }
   },
   "pmt-rgmt": {
@@ -1426,6 +1464,10 @@
         }
       ],
       "artifact_kind": "author_original_file"
+    },
+    "evaluation_source_sha256": {
+      "network.py": "910cc8425cafb942ea4f35620f2d130ec5bb159ac6fbfb6f84c5f9c6305cf011",
+      "tensor_adapter.py": "9428906fa325b436fd1faa93d8e790e6c42370a3594948a34ad17fd4e68377f4"
     }
   },
   "sonic-original": {
@@ -1587,6 +1629,10 @@
       },
       "author_variant_manifest_url": "https://huggingface.co/nvidia/GEAR-SONIC/raw/6733128a3d8a523b1418b06bca3cdf61c8b0987f/config.json",
       "author_variant_manifest_sha256": "326dcc509ad93509cf262871256a74f508f43a8430f61ec6abe8034e985ce948"
+    },
+    "evaluation_source_sha256": {
+      "sonic_torch.py": "2bfa2aeb673aa7fb48a72f1b571f34bb61549386366caa655b8385b9cf18c3bb",
+      "tensor_adapter.py": "677ce65b6fba3b87888daed92738710875a09f41e832fd261cad8637ffda033a"
     }
   },
   "holomotion-v1-3-2": {
@@ -1765,6 +1811,10 @@
         "local_batch_format": "safetensors with model-local tensor implementation",
         "numerical_evidence": "validation/inference-network-proof.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "holo_torch.py": "85ccc14b09b44efee533f5c810b3094a7a49f6d902fc6a1188dd0afa94b743e0",
+      "tensor_adapter.py": "9db3def5fa23447944b4a75b5492781d54a502b0544ddaa3998383c08514c1bc"
     }
   },
   "holomotion-v1-4-1": {
@@ -1943,6 +1993,10 @@
         "local_batch_format": "safetensors with model-local tensor implementation",
         "numerical_evidence": "validation/inference-network-proof.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "holo_torch.py": "85ccc14b09b44efee533f5c810b3094a7a49f6d902fc6a1188dd0afa94b743e0",
+      "tensor_adapter.py": "9db3def5fa23447944b4a75b5492781d54a502b0544ddaa3998383c08514c1bc"
     }
   },
   "textop": {
@@ -2117,6 +2171,11 @@
         }
       ],
       "artifact_kind": "author_original_file"
+    },
+    "evaluation_source_sha256": {
+      "reference_kinematics.py": "59412654e355581879f0966c3919c37582d9f3ce0c1050c238199ceec0b3fa8d",
+      "tensor_adapter.py": "84a816752d7a80ba2cbc08aa4e3ad84638ea779f31aff946711ba782c14c182b",
+      "tensor_policy.py": "effdebf977b51157c9985b93d5ae2c82db02111f433bab24e8962b4616b4a70b"
     }
   },
   "holomotion-v2-0-0": {
@@ -2268,6 +2327,10 @@
         "local_batch_format": "safetensors with model-local tensor implementation",
         "numerical_evidence": "validation/inference-network-proof.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "holo_torch.py": "85ccc14b09b44efee533f5c810b3094a7a49f6d902fc6a1188dd0afa94b743e0",
+      "tensor_adapter.py": "9db3def5fa23447944b4a75b5492781d54a502b0544ddaa3998383c08514c1bc"
     }
   },
   "mosaic": {
@@ -2354,6 +2417,9 @@
       "original_filename": "gmt.onnx",
       "verification_scope": "Original general tracking ONNX; no conversion or fine-tuning.",
       "upstream_source_commit": "175287dd559c098d21b287a8a27c6bb48d4606ff"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "5fdfe86aa8466522691b519b1b28e2772e78758188d3751fe069fc36719211c6"
     }
   },
   "bfm-zero": {
@@ -2479,6 +2545,11 @@
         "tensor_weights_match_evaluated_weights": true,
         "evidence": "validation/native-full-bootstrap.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "reference_kinematics.py": "59412654e355581879f0966c3919c37582d9f3ce0c1050c238199ceec0b3fa8d",
+      "tensor_adapter.py": "e0ef105044cbeed8f0ef3ceb5f2a6fdbf05ad00556f74a13cd6e75a8921bdaad",
+      "tensor_policy.py": "078d14fe16e1d94b972ac32fce5360c608f0bcc60ba2174c0e7462d95928ec89"
     }
   },
   "humanoid-gpt": {
@@ -2593,6 +2664,12 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "f5789a75324f32e5efdda873740efea9650d436cb0402590061ce6365c22ed36",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "tensor_reference.py": "a2cb49dc3e652219d9781557b86369b245b7464371b037d69f45974c819dc1be",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     },
     "evaluation_issues": [
       {
@@ -2787,6 +2864,11 @@
         "project_url": "https://extreme-humanoid.github.io/",
         "code_url": "https://github.com/Perkins729/OmniXtreme"
       }
+    },
+    "evaluation_source_sha256": {
+      "native_rotations.py": "c2f25c9bda700f90e7f048ee34d5b21f0acd37fb3377b5903ee7ce4c5591b339",
+      "omni_torch.py": "dfd78e7a126b5d326f10d2a02c4b1b1cc488a8a6c587d83a8a1769a05fd8ea94",
+      "tensor_adapter.py": "0d150f090b8fc60e488739b80c609730b1935c296ef6f850f2b3479bcd8384bd"
     }
   },
   "humanoid-gpt-transformer-216": {
@@ -2901,6 +2983,12 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "f5789a75324f32e5efdda873740efea9650d436cb0402590061ce6365c22ed36",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "tensor_reference.py": "a2cb49dc3e652219d9781557b86369b245b7464371b037d69f45974c819dc1be",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     }
   },
   "holomotion-v1-3-1": {
@@ -3081,6 +3169,10 @@
         "local_batch_format": "safetensors with model-local tensor implementation",
         "numerical_evidence": "validation/inference-network-proof.json"
       }
+    },
+    "evaluation_source_sha256": {
+      "holo_torch.py": "85ccc14b09b44efee533f5c810b3094a7a49f6d902fc6a1188dd0afa94b743e0",
+      "tensor_adapter.py": "9db3def5fa23447944b4a75b5492781d54a502b0544ddaa3998383c08514c1bc"
     }
   },
   "scalebfm-m": {
@@ -3222,6 +3314,12 @@
         }
       ],
       "artifact_kind": "author_original_file"
+    },
+    "evaluation_source_sha256": {
+      "native_network.py": "0f09be3a6c5a7396ef7f28ea8a5365b9c723bb896eb4da71cc8809c840dccdec",
+      "tensor_adapter.py": "212d4e3ce54d707cf8c48496000e830b72159383c9df895785e766d300288542",
+      "tensor_native.py": "8af886eb93f50eb0d93a0652c58e0b284f30e4b710dc82f814e92731f9d1d3d4",
+      "tensor_policy.py": "46f1bb09c64e3c1b6419cc73aa0938f8359976442146a9fb985f589da1c6d402"
     }
   },
   "any2track-v2": {
@@ -3339,6 +3437,11 @@
       ],
       "conversion_evidence": "mjwarp-network-parity.json",
       "independent_onnxruntime_evidence": "onnxruntime-parity.json"
+    },
+    "evaluation_source_sha256": {
+      "tensor_adapter.py": "82c4021714865388f8362dceba4b1f8522afbd3c94e7f3df41b5ef77de5a15c1",
+      "tensor_common.py": "518fc3b40e5c38078d1d2fce4cf7133f6aa614b442152a01fdbbd5e600401a2e",
+      "torch_graph.py": "7fd92161cb5465f0f2eb91429009dc3c6b6c4a4fb533300228f9c4262b6a4d4f"
     }
   },
   "pmt-adaptive": {

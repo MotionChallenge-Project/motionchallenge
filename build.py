@@ -60,6 +60,7 @@ current_pages.render(CONTENT,MODELS,TRACKS,rows,page,intro,GH)
 for row in rows:
  shutil.copy2(CONTENT/'evidence'/row['evidence_file'],D/'data/evidence'/row['evidence_file'])
 shutil.copytree(CONTENT/'protocols',D/'data/protocols',dirs_exist_ok=True)
+shutil.copy2(CONTENT/'evaluation-source.json',D/'data/evaluation-source.json')
 shutil.copytree(ROOT/'assets/dataset-logos',D/'assets/dataset-logos',dirs_exist_ok=True,ignore=shutil.ignore_patterns('README.md','._*'))
 shutil.copytree(ROOT/'assets/model-icons',D/'assets/model-icons',dirs_exist_ok=True,ignore=shutil.ignore_patterns('README.md','._*'))
 for name in ('app.js','style.css'):

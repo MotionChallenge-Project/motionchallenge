@@ -1,6 +1,7 @@
 """Collect verified MJWarp runs into the local website repository."""
 import argparse,hashlib,json,math,shutil
 from pathlib import Path
+import run_compatibility
 
 def sha(path):
  with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
@@ -18,6 +19,7 @@ def main():
   item={k:v for k,v in old.items() if k in keep};item['runtime']=json.loads((root/'runtime.mjwarp.json').read_text());item['admission']=json.loads((root/'admission.mjwarp.json').read_text());models[name]=item
   origin=root/'validation/checkpoint-origin.json'
   item['checkpoint_origin']=json.loads(origin.read_text()) if origin.exists() else {'status':'source_verification_pending'}
+  if item['admission']['status']=='inference_verified':item['evaluation_source_sha256']=run_compatibility.model_sources(root,item['runtime']['tensor_entrypoint'])
  for name,item in models.items():
   issues=[]
   for dataset,label in [('lafan','LAFAN'),('seed','BONES-SEED')]:
@@ -32,10 +34,11 @@ def main():
   shutil.copy2(source,content/'protocols'/f'{name}.json')
   tracks.append({'id':name+'-g1-mjwarp-no-linear-velocity-v1','benchmark_id':name,'benchmark_label':label,'robot_id':'g1-29dof','robot_label':'Unitree G1 · 29 DoF','clip_count':count,'protocol_id':protocol['id'] if 'id' in protocol else protocol['protocol_id'],'protocol_sha256':sha(source),'state_access':'proprioceptive-no-position-no-linear-velocity-v1','primary_metric':'passed'})
  track_by_name={x['benchmark_id']:x for x in tracks}
+ core_manifest={'schema':'motionchallenge/evaluation-source-v1','source_sha256':run_compatibility.core_sources(core),'non_rollout_files':sorted(run_compatibility.CORE_NON_ROLLOUT)}
+ (content/'evaluation-source.json').write_text(json.dumps(core_manifest,indent=2)+'\n')
  evidence_dir=content/'evidence';evidence_dir.mkdir(exist_ok=True)
  selected={};rejected=[]
  by_runtime={m['runtime']['id']:name for name,m in models.items()}
- production=('tensor_adapter.py','tensor_policy.py','torch_policy.py','torch_graph.py','reference_model.py','tensor_common.py','tensor_reference.py')
  for path in sorted((base/'runs').glob('*/result.json'),key=lambda p:p.stat().st_mtime):
   try:
    result=json.loads(path.read_text())
@@ -53,10 +56,7 @@ def main():
    origin=model['checkpoint_origin']
    if origin.get('status')!='author_release_verified' or origin.get('sha256')!=model['runtime']['weights_sha256']:continue
    if result['checkpoint_sha256']!=model['runtime']['weights_sha256']:continue
-   # Evidence/admission records can be added after a run. Compare execution fields.
-   fields=('tensor_entrypoint','inference_config_sha256','control_period_s','reference_offsets_s','weights_sha256')
-   if any(runtime.get(k)!=model['runtime'].get(k) for k in fields):continue
-   if any(file in result['adapter_sha256'] and (not (root/file).exists() or sha(root/file)!=result['adapter_sha256'][file]) for file in production):continue
+   run_compatibility.validate_run(result,runtime,model,core_manifest)
    dataset=result['dataset'];track=track_by_name[dataset]
    if result['protocol_sha256']!=track['protocol_sha256']:continue
    if len(result['clips'])!=track['clip_count'] or verification['clips']!=track['clip_count']:continue

@@ -11,7 +11,9 @@ SITE_BASE_PATH='' python build.py
 python -m http.server 8768 --bind 127.0.0.1 --directory docs
 ~~~
 
-The workspace contains Core, independent model repositories and evaluation outputs under runs/. The importer checks complete cohorts, author-release provenance, original checkpoint hashes, execution fields, simulator configuration and independent trace-verification receipts. Duplicate shared exports are excluded from official model entries. Publication checks bind every leaderboard value to its evidence digest.
+The workspace contains Core, independent model repositories and evaluation outputs under runs/. The importer checks complete cohorts, author-release provenance, original checkpoint hashes, all runtime execution fields, evaluator sources, model inference imports, simulator configuration and independent trace-verification receipts. Duplicate shared exports are excluded from official model entries. Publication checks bind every leaderboard value to its evidence digest and the current evaluation-source manifest.
+
+BONES-SEED uses a feasibility-filtered subset of the original G1 motion data. Users download the original archive and apply the same public inclusion list of 129,561 motions for every model.
 
 content/ holds model metadata, frozen protocols and compact receipts. The builder exports only evidence referenced by current result rows. Full traces, motions and checkpoints stay outside Git. Numerical reproduction differences are recorded separately.
 
