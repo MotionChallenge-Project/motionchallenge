@@ -43,11 +43,11 @@ def evaluation_record(results, track, key, content, github):
     """One score table, source block and command for an evaluation."""
     assert len(results)==1 and results[0]['termination_mode']=='unified'
     unified = early = full = results[0]
-    fields = [('XY only', 'mpjpe_xy_aligned_m'), ('XY + yaw', 'mpjpe_xy_yaw_aligned_m'), ('No alignment', 'mpjpe_world_m')]
+    fields = [('XY only', 'mpkpe_xy_aligned_m'), ('XY + yaw', 'mpkpe_xy_yaw_aligned_m'), ('No alignment', 'mpkpe_world_m')]
     text = '<section class="section evaluation-mode" id="results"><h2>Results</h2>'
     text += f'<div class="evaluation-score"><strong>{early["passed"]} / {early["total"]}</strong><span>motions passed</span><span>Completion {early["completion_pct"]:.2f}%</span></div>'
-    text += '<p>Success and completion use the first declared failure. MPJPE measures 3D position errors at the protocol’s declared body-origin keypoints (14 for G1), with three alignments over two time ranges.</p>'
-    text += '<div class="table-scroll"><table class="evaluation-metrics"><caption>Mean Per-Joint Position Error · MPJPE · mm · lower is better</caption><thead><tr><th colspan="3" scope="colgroup" id="none">Entire motion</th><th colspan="3" scope="colgroup" id="early">Until first failure</th></tr><tr>'
+    text += '<p>Success and completion use the first declared failure. MPKPE measures 3D position errors at the protocol’s declared body-origin keypoints (14 for G1), with three alignments over two time ranges.</p>'
+    text += '<div class="table-scroll"><table class="evaluation-metrics"><caption>Mean Per-Keypoint Position Error · MPKPE · mm · lower is better</caption><thead><tr><th colspan="3" scope="colgroup" id="none">Entire motion</th><th colspan="3" scope="colgroup" id="early">Until first failure</th></tr><tr>'
     text += ''.join('<th scope="col">'+label+'</th>' for label, _ in fields*2)+'</tr></thead><tbody><tr>'
     for row, prefix in [(full, 'full_'), (early, '')]:
         text += ''.join('<td>'+ (f'{row[prefix+field]*1000:.2f}' if row is not None else '—') +'</td>' for _, field in fields)

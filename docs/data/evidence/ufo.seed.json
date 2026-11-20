@@ -1,6 +1,6 @@
 {
   "protocol_id": "seed-g1-29dof/mjwarp311/no-position-no-linear-velocity-v1",
-  "protocol_sha256": "3900f88a933613534e896fcd6732fa19bde6ed772d36cad017b9cb7f0e8269b7",
+  "protocol_sha256": "55667e7ee930b0cab378f6cc911b82c1107482c8d242a4d48873845eb9c2d581",
   "checkpoint_sha256": "fe58bf17427679a0f0a22ad5f05d7579373a365936154770f31e815e8f0e4ad7",
   "runtime_sha256": "c0af64b88d4df7178ee6fb6f37c43cbaaeaaa6a628758722445c818a3ad96a4e",
   "source_sha256": {
@@ -158,17 +158,17 @@
     "success_count": 126526,
     "completion": 0.985313892779306,
     "full": {
-      "mpjpe_world_m": 0.415028642846435,
-      "mpjpe_xy_aligned_m": 0.07153979719347141,
-      "mpjpe_xy_yaw_aligned_m": 0.05274374378355387,
+      "mpkpe_world_m": 0.415028642846435,
+      "mpkpe_xy_aligned_m": 0.07153979719347141,
+      "mpkpe_xy_yaw_aligned_m": 0.05274374378355387,
       "joint_mae_rad": 0.12346895007097607,
       "anchor_height_error_m": 0.01824502403646855,
       "anchor_gravity_z_error": 0.011578819827019127
     },
     "prefix": {
-      "mpjpe_world_m": 0.41043823783764727,
-      "mpjpe_xy_aligned_m": 0.07101274136053023,
-      "mpjpe_xy_yaw_aligned_m": 0.05259514979243635,
+      "mpkpe_world_m": 0.41043823783764727,
+      "mpkpe_xy_aligned_m": 0.07101274136053023,
+      "mpkpe_xy_yaw_aligned_m": 0.05259514979243635,
       "joint_mae_rad": 0.12344716276354918,
       "anchor_height_error_m": 0.01808194642830261,
       "anchor_gravity_z_error": 0.01143202096616471

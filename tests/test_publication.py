@@ -13,7 +13,7 @@ class PublicationTests(unittest.TestCase):
   publication_checks.validate(self.content,self.rows if rows is None else rows,self.models if models is None else models,self.tracks if tracks is None else tracks)
  def test_evidence(self):self.check()
  def test_changed_metric_rejected(self):
-  self.assertTrue(self.rows);rows=copy.deepcopy(self.rows);rows[0]['full_mpjpe_xy_aligned_m']+=.01
+  self.assertTrue(self.rows);rows=copy.deepcopy(self.rows);rows[0]['full_mpkpe_xy_aligned_m']+=.01
   with self.assertRaisesRegex(ValueError,'metric mismatch'):self.check(rows=rows)
  def test_excluded_model_rejected(self):
   models=copy.deepcopy(self.models);models[self.rows[0]['model']]['admission']['status']='excluded'

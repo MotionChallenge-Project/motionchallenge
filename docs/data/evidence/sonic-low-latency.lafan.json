@@ -1,6 +1,6 @@
 {
   "protocol_id": "lafan-g1-29dof/mjwarp311/no-position-no-linear-velocity-v1",
-  "protocol_sha256": "940b7b6e059959c17f8ad092ccc7538d217a02f368fc9c00ad7c15f2b07713a9",
+  "protocol_sha256": "d573e641567550bddae48f987dfddbd44cff94cc8ff669613d91c6597d86bc32",
   "checkpoint_sha256": "c4ac2e74045e7cbfb568f15e6bf47ea7ce023df7a94322af50be223e0a628bab",
   "runtime_sha256": "3a33a78d639f515422252ba4753924c9660e2808487057158ed8456153819e3c",
   "source_sha256": {
@@ -154,17 +154,17 @@
     "success_count": 26,
     "completion": 0.816911752336517,
     "full": {
-      "mpjpe_world_m": 1.977693889269922,
-      "mpjpe_xy_aligned_m": 0.11860722376606221,
-      "mpjpe_xy_yaw_aligned_m": 0.11075111929150161,
+      "mpkpe_world_m": 1.977693889269922,
+      "mpkpe_xy_aligned_m": 0.11860722376606221,
+      "mpkpe_xy_yaw_aligned_m": 0.11075111929150161,
       "joint_mae_rad": 0.194407674175487,
       "anchor_height_error_m": 0.07743573356011765,
       "anchor_gravity_z_error": 0.13805019560255105
     },
     "prefix": {
-      "mpjpe_world_m": 1.5596506308739742,
-      "mpjpe_xy_aligned_m": 0.04514121233882078,
-      "mpjpe_xy_yaw_aligned_m": 0.042660768397322725,
+      "mpkpe_world_m": 1.5596506308739742,
+      "mpkpe_xy_aligned_m": 0.04514121233882078,
+      "mpkpe_xy_yaw_aligned_m": 0.042660768397322725,
       "joint_mae_rad": 0.13177009559621128,
       "anchor_height_error_m": 0.020121869927699387,
       "anchor_gravity_z_error": 0.017760913656930534

@@ -1,6 +1,6 @@
 {
   "protocol_id": "seed-g1-29dof/mjwarp311/no-position-no-linear-velocity-v1",
-  "protocol_sha256": "3900f88a933613534e896fcd6732fa19bde6ed772d36cad017b9cb7f0e8269b7",
+  "protocol_sha256": "55667e7ee930b0cab378f6cc911b82c1107482c8d242a4d48873845eb9c2d581",
   "checkpoint_sha256": "f3fa8cecf98080fe255348fd94627038f90db64246ca7309de15e80ad6bc6f22",
   "runtime_sha256": "9077306bdc65d03fe8ac71d20dc2114e7bf39ea129c8580fbad0ad3cfb91b002",
   "source_sha256": {
@@ -155,17 +155,17 @@
     "success_count": 128863,
     "completion": 0.9973651562554409,
     "full": {
-      "mpjpe_world_m": 0.06349083080072693,
-      "mpjpe_xy_aligned_m": 0.035400726681005176,
-      "mpjpe_xy_yaw_aligned_m": 0.031497415448992275,
+      "mpkpe_world_m": 0.06349083080072693,
+      "mpkpe_xy_aligned_m": 0.035400726681005176,
+      "mpkpe_xy_yaw_aligned_m": 0.031497415448992275,
       "joint_mae_rad": 0.075613305049151,
       "anchor_height_error_m": 0.0099430581243304,
       "anchor_gravity_z_error": 0.011089042477873474
     },
     "prefix": {
-      "mpjpe_world_m": 0.061208601896497,
-      "mpjpe_xy_aligned_m": 0.034359232043829784,
-      "mpjpe_xy_yaw_aligned_m": 0.030501707330694117,
+      "mpkpe_world_m": 0.061208601896497,
+      "mpkpe_xy_aligned_m": 0.034359232043829784,
+      "mpkpe_xy_yaw_aligned_m": 0.030501707330694117,
       "joint_mae_rad": 0.07516579938245531,
       "anchor_height_error_m": 0.00898484817701767,
       "anchor_gravity_z_error": 0.00937735427133186

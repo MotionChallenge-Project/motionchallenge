@@ -38,4 +38,4 @@ def validate(content,rows,models,tracks):
   for span,prefix in [('full','full_'),('prefix','')]:
    for name,value in summary[span].items():
     if not math.isfinite(value) or value<0:raise ValueError('Invalid metric')
-    if name.startswith('mpjpe_') and row[prefix+name]!=value:raise ValueError('Leaderboard metric mismatch')
+    if name.startswith('mpkpe_') and row[prefix+name]!=value:raise ValueError('Leaderboard metric mismatch')

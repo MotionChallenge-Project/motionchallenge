@@ -35,11 +35,11 @@ def render(content, page, intro, github):
     body += ('<div class="actions"><a class="text-link" href="' + core + '/docs/OBSERVATIONS.md">Frozen rules ↗</a>'
              '<a class="text-link" href="/models/">Model-specific handling ↗</a></div></section>')
     body += '''<section id="alignment"><h2>Metrics</h2>
-<p><strong>Primary metric:</strong> No termination · XY only MPJPE, in mm. Lower is better; yaw and height errors are retained.</p>
+<p><strong>Primary metric:</strong> No termination · XY only MPKPE, in mm. Lower is better; yaw and height errors are retained.</p>
 <table class="rules-table"><thead><tr><th scope="col">Metric</th><th scope="col">Definition</th></tr></thead><tbody>
 <tr><th scope="row">Success ↑</th><td>Fraction of complete motions without failure</td></tr>
 <tr><th scope="row">Completion ↑</th><td>Last valid sample time before first failure divided by motion duration; averaged equally across motions. Successful motions count as 100%.</td></tr>
-<tr><th scope="row">MPJPE ↓ · mm</th><td>Mean Per-Joint Position Error over protocol-defined keypoints at robot body-frame origins (14 for G1). Average 3D Euclidean distances over keypoints and samples within each motion, then weight motions equally.</td></tr>
+<tr><th scope="row">MPKPE ↓ · mm</th><td>Mean Per-Keypoint Position Error over protocol-defined keypoints at robot body-frame origins (14 for G1). Average 3D Euclidean distances over keypoints and samples within each motion, then weight motions equally.</td></tr>
 </tbody></table>
 <table class="rules-table"><thead><tr><th scope="col">Alignment</th><th scope="col">Removed before measuring error</th></tr></thead><tbody>
 <tr><th scope="row">XY only</th><td>Per-frame horizontal root translation</td></tr>
