@@ -57,7 +57,7 @@
    if(active){
     if(button.dataset.sort===sort)header.setAttribute('aria-sort',descending?'descending':'ascending');else header.removeAttribute('aria-sort');
     const metric=sort.includes('mpjpe_');
-    sortingLabel=pairedOutcome?'Success / Failed':(metric?'MPBPE · '+(sort.startsWith('full_')?'No termination':'Early termination')+' · ':'')+label;
+    sortingLabel=pairedOutcome?'Success / Failed':(metric?'MPJPE · '+(sort.startsWith('full_')?'No termination':'Early termination')+' · ':'')+label;
     button.title=pairedOutcome?'Sorted together: fewer failures, higher success.':'Sorted best first: '+(descending?'high to low':'low to high')+'.';
    }else{header.removeAttribute('aria-sort');button.title='Sort by '+label+' · best first';}
   });

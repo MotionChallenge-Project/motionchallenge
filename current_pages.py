@@ -32,6 +32,7 @@ def render(content,models,tracks,rows,page,intro,gh):
    text+=f'<p><a href="{e(origin["author_release_url"],quote=True)}">Official author release ↗</a></p><p>{e(origin.get("verification_scope",""))}</p>'
   if runtime.get('weights_url'):text+=f'<p><a href="{e(runtime["weights_url"],quote=True)}">Pinned original weights ↗</a></p>'
   if status!='excluded':text+=f'<h2>Evaluate locally</h2><pre><code>git clone --recurse-submodules {m["adapter_repository"]}\ncd MotionChallenge-{name}\nuv sync --locked\nuv run --locked python evaluate.py --dataset lafan --data /data/lafan --output results/lafan\nuv run --locked python evaluate.py --dataset seed --data /data/seed/g1.tar.gz --output results/seed</code></pre><p>Weight download, conversion, validation, caching, full-batch rollout and trace verification are automatic.</p>'
+  text+='<h2>Metric</h2><p>MPJPE (Mean Per-Joint Position Error) measures the 3D Euclidean distance between actual and reference keypoint positions. The protocol defines these keypoints at robot body-frame origins: 14 points for G1. Errors are averaged over keypoints and scoring samples within each motion, then motions are weighted equally. Results report full-motion and first-failure-prefix scores with no alignment, XY alignment, and XY + yaw alignment. XY alignment removes pelvis horizontal translation while retaining height error. Leaderboard values are reported in millimetres (mm).</p>'
   related=[r for r in rows if r['model']==name]
   text+='<h2>Verified evaluations</h2>'+(''.join(f'<p><a href="/evaluations/{r["track_id"]}/{name}/">{r["benchmark_label"]}: {r["passed"]:,}/{r["total"]:,} successful motions →</a></p>' for r in related) or ('<p>No ranked full-suite result.</p>' if status=='excluded' or m.get('evaluation_issues') else '<p>Full-suite results are in validation.</p>'))
   if m.get('evaluation_issues'):
@@ -42,13 +43,15 @@ def render(content,models,tracks,rows,page,intro,gh):
  for r in rows:
   evidence=json.loads((content/'evidence'/r['evidence_file']).read_text())
   text=f'<p>{r["passed"]:,}/{r["total"]:,} successful motions · {r["completion_pct"]:.2f}% completion</p><p>Protocol <code>{e(evidence["protocol_id"])}</code></p><p>Result SHA256 <code>{evidence["result_sha256"]}</code></p>'
+  text+='<p>MPJPE (Mean Per-Joint Position Error) measures the 3D Euclidean distance between actual and reference keypoint positions. The protocol defines these keypoints at robot body-frame origins: 14 points for G1. Errors are averaged over keypoints and scoring samples within each motion, then motions are weighted equally. Results report full-motion and first-failure-prefix scores with no alignment, XY alignment, and XY + yaw alignment. XY alignment removes pelvis horizontal translation while retaining height error. Leaderboard values are reported in millimetres (mm).</p>'
   for span,title in [('prefix','Prefix through first failure'),('full','Full motion')]:
    anchor='none' if span=='full' else 'early'
    text+=f'<h2 id="{anchor}">{title}</h2><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>'
    for key,value in evidence['summary'][span].items():
     unit='mm' if key.endswith('_m') else 'rad' if key.endswith('_rad') else ''
     value=value*1000 if unit=='mm' else value
-    text+=f'<tr><td>{e(key)}</td><td>{value:.5f} {unit}</td></tr>'
+    label={'mpjpe_world_m':'MPJPE · No alignment','mpjpe_xy_aligned_m':'MPJPE · XY only','mpjpe_xy_yaw_aligned_m':'MPJPE · XY + yaw'}.get(key,key)
+    text+=f'<tr><td>{e(label)}</td><td>{value:.5f} {unit}</td></tr>'
    text+='</tbody></table>'
   text+=f'<h2>Evidence</h2><p><a href="/data/evidence/{r["evidence_file"]}">Source hashes and verification receipt (JSON) ↓</a></p><p>The receipt binds the full result and pose-trace manifest. Full artifacts remain with the evaluation output.</p>'
   if evidence.get('reproduction'):

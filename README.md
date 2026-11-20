@@ -22,3 +22,7 @@ GitHub Pages serves docs/ from the website branch. Building does not publish the
 The leaderboard opens BONES-SEED and sorts No termination · XY only from low to high. Failed and Success occupy separate columns. No termination precedes Early termination; one vertical rule separates the two metric windows. Failed and Success share a sorting control and highlight together. Completion remains in evidence and detail pages. Dated news links directly to the selected benchmark leaderboard.
 
 Protocol pages describe common evaluation standards; benchmark pages specify the robot and physical configuration. Organization marks and their sources are recorded under assets/model-icons/ and assets/dataset-logos/.
+
+## Metric
+
+MPJPE (Mean Per-Joint Position Error) measures the 3D Euclidean distance between actual and reference keypoint positions. The protocol defines these keypoints at robot body-frame origins: 14 points for G1. Errors are averaged over keypoints and scoring samples within each motion, then motions are weighted equally. Results report full-motion and first-failure-prefix scores with no alignment, XY alignment, and XY + yaw alignment. XY alignment removes pelvis horizontal translation while retaining height error. Leaderboard values are reported in millimetres (mm).
